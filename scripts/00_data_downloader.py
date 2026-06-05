@@ -21,6 +21,7 @@ RAW = os.path.join(ROOT, "data", "raw")
 TIMEOUT = 60
 
 # Datasets a atacar. type=slug -> package_show directo. type=search -> package_search.
+# SOLO 1_nucleo: es lo unico que consume el pipeline de analisis.
 DATASETS = [
     # NIVEL 1 — nucleo del peligro
     {"cat": "1_nucleo", "dir": "01_incidentes_viales_c5", "type": "slug", "id": "incidentes-viales-c5"},
@@ -29,18 +30,6 @@ DATASETS = [
     {"cat": "1_nucleo", "dir": "04_hechos_transito_ssc", "type": "slug", "id": "hechos-de-transito-reportados-por-ssc-base-comparativa"},
     {"cat": "1_nucleo", "dir": "05_infraestructura_vial_ciclista", "type": "slug", "id": "infraestructura-vial-ciclista"},
     {"cat": "1_nucleo", "dir": "06_area_influencia_ciclovias_500m", "type": "slug", "id": "area-de-influencia-de-ciclovias-500-mts"},
-    # NIVEL 2 — transporte / multimodal
-    {"cat": "2_transporte", "dir": "07_gtfs", "type": "search", "q": "GTFS"},
-    {"cat": "2_transporte", "dir": "08_rutas_corredores_transporte", "type": "slug", "id": "rutas-y-corredores-del-transporte-publico-concesionado"},
-    {"cat": "2_transporte", "dir": "09_geolocalizacion_metrobus", "type": "slug", "id": "geolocalizacion-metrobus"},
-    # NIVEL 3 — bici
-    {"cat": "3_bici", "dir": "10_biciestacionamientos", "type": "slug", "id": "biciestacionamientos"},
-    {"cat": "3_bici", "dir": "11_datos_bicicletas_ecobici", "type": "slug", "id": "datos-de-bicicletas-ecobici"},
-    {"cat": "3_bici", "dir": "12_cicloestaciones_ecobici", "type": "slug", "id": "cicloestaciones-ecobici-nuevo-sistema"},
-    # NIVEL 4 — flujos (analisis)
-    {"cat": "3_bici", "dir": "13_afluencia_ecobici", "type": "search", "q": "viajes Ecobici"},
-    # NIVEL 5 — accesibilidad (carta secreta)
-    {"cat": "4_accesibilidad", "dir": "14_banquetas_rampas_manzana", "type": "slug", "id": "banquetas-y-rampas-por-manzana"},
 ]
 
 resultados = []  # {cat, slug, status, detalle}

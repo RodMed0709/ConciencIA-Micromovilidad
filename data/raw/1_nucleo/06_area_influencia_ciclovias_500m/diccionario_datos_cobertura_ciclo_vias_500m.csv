@@ -1,0 +1,25 @@
+Categoría,"                                            Nombre de la base y/o conjunto de datos
+
+","                                                     Nombre de la tabla de la base de datos / hoja del conjunto de datos
+
+",Descripción de capa,Etiqueta del campo o variable ,Descripció de Campo,"Tipo de dato
+",Rango o valores que permite el campo,"Clasificación de la información
+","Especificaciones y/o reglas de cálculo
+ 
+","Obligatoriedad del campo
+ 
+","Registro de campos vacíos 
+ 
+","Tipo de archivo:
+"
+Movilidad; Infraestructura y Obra Pública,cobertura_ciclo_vias_500m,Área de influencia de Ciclovias (500 mts),Capa de información geoespacial con la cobertura o área de influencia de Ciclovias (500 metros) en Ciudad de México,ID,IDENTIFICADOR,Número entero ,Número consecutivo,Pública,,Obligatorio,Sin datos vacios,Shape file (.shp)
+Movilidad; Infraestructura y Obra Pública,cobertura_ciclo_vias_500m,Área de influencia de Ciclovias (500 mts),Capa de información geoespacial con la cobertura o área de influencia de Ciclovias (500 metros) en Ciudad de México,estado,ESTADO,Alfanumérico,Texto,Pública,,Obligatorio,Sin datos vacios,Shape file (.shp)
+Movilidad; Infraestructura y Obra Pública,cobertura_ciclo_vias_500m,Área de influencia de Ciclovias (500 mts),Capa de información geoespacial con la cobertura o área de influencia de Ciclovias (500 metros) en Ciudad de México,nombre,NOMBRE,Alfanumérico,Texto,Pública,,Obligatorio,Sin datos vacios,Shape file (.shp)
+Movilidad; Infraestructura y Obra Pública,cobertura_ciclo_vias_500m,Área de influencia de Ciclovias (500 mts),Capa de información geoespacial con la cobertura o área de influencia de Ciclovias (500 metros) en Ciudad de México,vialidad,VIALIDAD,Alfanumérico,Texto,Pública,,Obligatorio,Sin datos vacios,Shape file (.shp)
+Movilidad; Infraestructura y Obra Pública,cobertura_ciclo_vias_500m,Área de influencia de Ciclovias (500 mts),Capa de información geoespacial con la cobertura o área de influencia de Ciclovias (500 metros) en Ciudad de México,tipo_ic,TIPO CICLOVÍA,Alfanumérico,Texto,Pública,,Obligatorio,Sin datos vacios,Shape file (.shp)
+Movilidad; Infraestructura y Obra Pública,cobertura_ciclo_vias_500m,Área de influencia de Ciclovias (500 mts),Capa de información geoespacial con la cobertura o área de influencia de Ciclovias (500 metros) en Ciudad de México,tipo_via,TIPO DE VÍA,Alfanumérico,Texto,Pública,,Obligatorio,Sin datos vacios,Shape file (.shp)
+Movilidad; Infraestructura y Obra Pública,cobertura_ciclo_vias_500m,Área de influencia de Ciclovias (500 mts),Capa de información geoespacial con la cobertura o área de influencia de Ciclovias (500 metros) en Ciudad de México,instancia,INSTANCIA,Alfanumérico,Texto,Pública,,Obligatorio,Sin datos vacios,Shape file (.shp)
+Movilidad; Infraestructura y Obra Pública,cobertura_ciclo_vias_500m,Área de influencia de Ciclovias (500 mts),Capa de información geoespacial con la cobertura o área de influencia de Ciclovias (500 metros) en Ciudad de México,ano,AÑO,Número entero ,2004   a    2020,Pública,,Obligatorio,Sin datos vacios,Shape file (.shp)
+Movilidad; Infraestructura y Obra Pública,cobertura_ciclo_vias_500m,Área de influencia de Ciclovias (500 mts),Capa de información geoespacial con la cobertura o área de influencia de Ciclovias (500 metros) en Ciudad de México,longitud,LONGITUD,Número decimales,0.023   a  46.01,Pública,,Obligatorio,Sin datos vacios,Shape file (.shp)
+Movilidad; Infraestructura y Obra Pública,cobertura_ciclo_vias_500m,Área de influencia de Ciclovias (500 mts),Capa de información geoespacial con la cobertura o área de influencia de Ciclovias (500 metros) en Ciudad de México,sentido,SENTIDO,Alfanumérico,Texto,Pública,,Obligatorio,Sin datos vacios,Shape file (.shp)
+Movilidad; Infraestructura y Obra Pública,cobertura_ciclo_vias_500m,Área de influencia de Ciclovias (500 mts),Capa de información geoespacial con la cobertura o área de influencia de Ciclovias (500 metros) en Ciudad de México,BUFF_DIST,BUFER DISTANCIA,Número entero ,500,Pública,,Obligatorio,Sin datos vacios,Shape file (.shp)

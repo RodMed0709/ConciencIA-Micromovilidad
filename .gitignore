@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# CSV crudos de C5 (>100MB, exceden limite de GitHub)
+# Re-descargar con: python scripts/download_data.py
+data/raw/1_nucleo/01_incidentes_viales_c5/inViales_*.csv
+
+# Datos no usados por el pipeline (se re-descargan con download_data.py)
+data/raw/2_transporte/
+data/raw/3_bici/
+data/raw/4_accesibilidad/
+
+# OS
+Thumbs.db
+.DS_Store

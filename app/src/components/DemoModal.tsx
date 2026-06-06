@@ -493,9 +493,17 @@ function MapScreen({ active, onAdvance }: { active: boolean; onAdvance: () => vo
           🛴 Ruta Vital · 4.2 km · ~18 min · <span className="text-teal-400">↓34% riesgo</span>
         </p>
         <p className="mt-1 text-[11px] text-teal-300">Evitando: Tlalpan, Eje 5 Sur</p>
+        <a
+          href="/ruta_segurav2.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 block w-full rounded-xl border border-teal-400/60 bg-teal-500/10 py-2.5 text-center text-sm font-semibold text-teal-200 transition hover:bg-teal-500/20"
+        >
+          🗺️ Abrir mapa real (motor de riesgo) ↗
+        </a>
         <button
           onClick={onAdvance}
-          className="mt-3 w-full rounded-xl bg-teal-600 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-500"
+          className="mt-2 w-full rounded-xl bg-teal-600 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-500"
         >
           Unirme al Mobility Pool →
         </button>

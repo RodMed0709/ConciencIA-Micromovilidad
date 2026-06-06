@@ -29,15 +29,18 @@ Verifica el mapa directo: `http://localhost:3000/ruta_segurav2.html`
 
 ## Publicar (que cualquiera le pique y funcione)
 
-El build usa **nitro con target Cloudflare** (default de Lovable). Tres caminos:
+App TanStack Start con SSR → **NO va en GitHub Pages** (Pages es solo estático y
+mete subruta que rompe `/ruta_segurav2.html`). Usa un host con servidor:
 
-1. **Lovable Publish (lo más rápido).** Si este código está en tu proyecto Lovable
-   (Lovable ↔ GitHub sync), abre Lovable y dale **Publish**. Te da una URL
-   `*.lovable.app` pública. Asegúrate de que `public/ruta_segurav2.html` y
-   `public/mapa_riesgo.html` estén en el proyecto (si no, en el chat de Lovable:
-   "agrega estos archivos a public").
-2. **Cloudflare Pages.** Conecta el repo, build `npm run build`, output `.output`.
+1. **Vercel (recomendado).** vercel.com → New Project → importa el repo de GitHub.
+   - **Root Directory: `app`** (importante, la app no está en la raíz del repo)
+   - Framework: TanStack Start / Vite (auto). Install/build quedan por default.
+   - nitro auto-detecta Vercel; el `.npmrc` resuelve el peer de nitro.
+   - Cada push a `main` redespliega solo. URL pública `*.vercel.app`.
+2. **Cloudflare Pages.** Igual conectando el repo; root `app`, build `npm run build`.
 3. **Local para jueces en vivo:** `npm run build && npm run preview`.
+
+> No necesitas Lovable para hostear. Lovable solo fue el editor donde nació la app.
 
 ## Estructura
 

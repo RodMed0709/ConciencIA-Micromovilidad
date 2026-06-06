@@ -232,6 +232,7 @@ const map = new maplibregl.Map({
   center:[-99.13,19.40], zoom:10.5
 });
 map.addControl(new maplibregl.NavigationControl(), 'top-right');
+window.__map = map; // referencia para debug/tests
 
 function colorRamp(maxv){
   return ['interpolate',['linear'],['get','accidentes'],
@@ -357,7 +358,10 @@ async function autocompletar(q, sug, cual){
     const r = await fetch(url); if(!r.ok) throw new Error('geocode '+r.status);
     const j = await r.json();
     const items = (j.features||[]);
-    if(!items.length){ sug.style.display='none'; return; }
+    if(!items.length){
+      sug.innerHTML = '<div style="color:#999;cursor:default">Sin resultados. Prueba calle + colonia, o pica el mapa.</div>';
+      sug.style.display='block'; return;
+    }
     sug.innerHTML = '';
     items.forEach(f => {
       const c = f.geometry.coordinates; // [lon,lat]

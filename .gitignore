@@ -12,6 +12,12 @@ ruta_key.js
 data/processed/ruta_key.js
 *.key
 
+# Tooling de dev (tests headless)
+node_modules/
+package.json
+package-lock.json
+_test_ruta.js
+
 # OS
 Thumbs.db
 .DS_Store

@@ -33,10 +33,10 @@ la **recomendada** (esquiva accidentes y robos) y mide el % de riesgo mitigado
 
 ![Motor de ruta](docs/screenshots/motor-ruta.png)
 
-**Mapa de riesgo** — burbujas por modo (peatón / ciclista / moto / coches / robo)
-+ universidades de CDMX
+**Otro viaje** — el mismo motor en otra ruta: esquiva ~2,143 incidentes y mitiga
+el **52% del riesgo** (peatón, 7.2 km)
 
-![Mapa de riesgo](docs/screenshots/mapa-riesgo.png)
+![Motor de ruta — otro ejemplo](docs/screenshots/motor-ruta-2.png)
 
 ---
 

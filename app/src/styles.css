@@ -1,0 +1,83 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@theme inline {
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-display: "Syne", system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --animate-fade-in: fade-in 0.7s ease-out both;
+  --animate-fade-up: fade-up 0.8s ease-out both;
+  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+}
+
+:root {
+  --background: oklch(0.18 0.04 250);
+  --foreground: oklch(0.98 0 0);
+  --primary: oklch(0.62 0.12 190);
+  --primary-foreground: oklch(0.98 0 0);
+  --accent: oklch(0.78 0.14 185);
+  --border: oklch(0.7 0.04 240 / 0.2);
+  --muted: oklch(0.3 0.03 250);
+  --muted-foreground: oklch(0.72 0.02 250);
+  --card: oklch(0.22 0.04 250 / 0.65);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.7); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html { background-color: #0F172A; }
+  body {
+    background-color: #0F172A;
+    color: #f8fafc;
+    font-family: var(--font-sans);
+    font-weight: 400;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+}
+
+@utility card-glass {
+  background-color: rgb(30 41 59 / 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgb(148 163 184 / 0.2);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+@utility card-glass-hover {
+  transform: translateY(-4px);
+  border-color: rgb(20 184 166 / 0.4);
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(45,212,191,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45,212,191,0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+.hero-glow {
+  background: radial-gradient(circle at center, rgba(13,148,136,0.35), transparent 60%);
+}

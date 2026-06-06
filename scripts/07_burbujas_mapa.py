@@ -23,7 +23,7 @@ PROC = os.path.join(ROOT, "data", "processed")
 # (1.68M coches, 273k peaton, etc.). Bolas mas grandes donde mas pega.
 FUENTE_MAPA = "01 C5"
 # radio de agrupacion por capa (mas grande = bolas mas grandes juntando vecinos).
-RADIOS = {"peaton": 150, "ciclista": 150, "moto": 150, "coches": 150, "crimen": 180}
+RADIOS = {"peaton": 150, "ciclista": 150, "moto": 150, "coches": 150, "crimen": 180, "cochemoto": 150}
 
 
 def cargar_motor():
@@ -56,6 +56,8 @@ def main():
         "ciclista": pd.concat([modo("ciclista"), crim], ignore_index=True),
         "moto": modo("moto"),
         "coches": modo("coches"),
+        # coche+moto en una sola capa (union re-clusterizada -> mas data, sin pegar sets)
+        "cochemoto": pd.concat([modo("coches"), modo("moto")], ignore_index=True),
         "crimen": crim,
     }
     for nombre, df in capas.items():

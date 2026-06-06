@@ -3,11 +3,12 @@
 ruta_segurav2.html — Constructor de RUTA SEGURA (motor de riesgo real).
 
 Diferencia con ruta_segura (v1): aqui el riesgo SI altera la ruta.
-- Pide a ORS varias rutas alternativas.
-- Puntua cada una por # de incidentes cercanos (usando las burbujas del modo
-  activo: peaton/bici incluyen robos; moto/coches solo accidentes).
-- Dibuja la ruta CORTA en gris transparente y la ruta SEGURA en verde.
-- Muestra % de riesgo mitigado (incidentes esquivados).
+- Ruta CORTA = ORS sin restriccion (la mas corta, roja).
+- Ruta SEGURA = ORS con options.avoid_polygons: las peores burbujas del modo en el
+  corredor O->D se mandan como zonas a evitar; ORS rerutea esquivandolas.
+  (peaton/bici incluyen robos; coche/moto van juntos en una capa.)
+- Puntua ambas por # de incidentes cercanos (≤120 m) para el velocimetro.
+- Muestra % de riesgo mitigado (incidentes esquivados) en un gauge.
 - El selector de modo (arriba) controla: perfil de ruteo + datos de riesgo +
   burbujas de fondo.
 
@@ -28,10 +29,9 @@ OUT_HTML = os.path.join(ROOT, "data", "processed", "ruta_segurav2.html")
 
 # modo -> perfil ORS + capa de burbujas (datos del modo)
 MODOS = [
-    {"id": "peaton",   "label": "Peaton",  "emoji": "\U0001F6B6", "perfil": "foot-walking",   "capa": "peaton"},
-    {"id": "bici",     "label": "Bici",    "emoji": "\U0001F6B2", "perfil": "cycling-regular", "capa": "ciclista"},
-    {"id": "moto",     "label": "Moto",    "emoji": "\U0001F3CD",  "perfil": "driving-car",     "capa": "moto"},
-    {"id": "coches",   "label": "Coches",  "emoji": "\U0001F697", "perfil": "driving-car",     "capa": "coches"},
+    {"id": "peaton", "label": "Peaton", "emoji": "\U0001F6B6", "perfil": "foot-walking",   "capa": "peaton"},
+    {"id": "bici",   "label": "Bici",   "emoji": "\U0001F6B2", "perfil": "cycling-regular", "capa": "ciclista"},
+    {"id": "coches", "label": "Coche/Moto", "emoji": "\U0001F697", "perfil": "driving-car", "capa": "cochemoto"},
 ]
 
 # Universidades curadas (~30 importantes, publicas + privadas). (patron, cuantas)
@@ -63,7 +63,7 @@ def cargar_unis_curadas():
     df["_n"] = df["universidad_nombre"].map(_na)
     unis, vistos = [], set()
     for patron, n in UNIS_CURADAS:
-        sub = df[df["_n"].str.contains(patron, na=False)]
+        sub = df[df["_n"].str.contains(patron, na=False, regex=False)]
         agregadas = 0
         for _, r in sub.iterrows():
             k = (round(r["lat"], 4), round(r["lon"], 4))
@@ -91,7 +91,8 @@ def main():
         gj = cargar(m["capa"])
         datos[m["capa"]] = gj
         maxes[m["capa"]] = gj.get("metadata", {}).get("max_accidentes_en_burbuja", 1) or 1
-    unis = [{"nombre": n, "lat": v[0], "lon": v[1]} for n, v in UNIVERSIDADES.items()]
+    unis = cargar_unis_curadas()
+    print(f"Universidades curadas: {len(unis)}")
 
     html = (HTML_TEMPLATE
             .replace("__DATOS__", json.dumps(datos, ensure_ascii=False))
@@ -123,26 +124,26 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .modos{display:flex;gap:6px;margin-bottom:12px}
   .modo{flex:1;text-align:center;padding:8px 0;border:1.5px solid #d0d0d0;border-radius:9px;
     cursor:pointer;font-size:12px;user-select:none;background:#fafafa}
-  .modo.activo{border-color:#16a34a;background:#e9f9ef;color:#15803d;font-weight:600}
+  .modo.activo{border-color:#2563eb;background:#eaf1ff;color:#1d4ed8;font-weight:600}
   .modo .ic{display:block;font-size:17px;line-height:1.1}
   .campo{position:relative;margin-bottom:10px}
   .campo label{display:block;font-size:11px;color:#555;margin-bottom:3px;text-transform:uppercase;letter-spacing:.03em}
   .campo input{width:100%;box-sizing:border-box;padding:9px 10px;border:1.5px solid #d0d0d0;border-radius:8px;font-size:13px}
-  .campo input:focus{outline:none;border-color:#16a34a}
+  .campo input:focus{outline:none;border-color:#2563eb}
   .sugerencias{position:absolute;z-index:5;left:0;right:0;background:#fff;border:1px solid #ddd;
     border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;box-shadow:0 6px 14px rgba(0,0,0,.12)}
   .sugerencias div{padding:8px 10px;font-size:12.5px;cursor:pointer;border-top:1px solid #f0f0f0}
-  .sugerencias div:hover{background:#e9f9ef}
+  .sugerencias div:hover{background:#eaf1ff}
   .acciones{display:flex;gap:8px;margin:6px 0 12px}
   .btn{flex:1;padding:10px 0;border:none;border-radius:9px;font-size:13.5px;cursor:pointer;font-weight:600}
-  .btn-primary{background:#16a34a;color:#fff}
-  .btn-primary:disabled{background:#a7d7b9;cursor:default}
+  .btn-primary{background:#2563eb;color:#fff}
+  .btn-primary:disabled{background:#9db8ee;cursor:default}
   .btn-ghost{background:#f0f0f0;color:#333}
-  .resultado{background:#f3fbf5;border:1px solid #cdeed7;border-radius:10px;padding:12px;font-size:13px;display:none}
+  .resultado{background:#f6f9ff;border:1px solid #d8e3fb;border-radius:10px;padding:12px;font-size:13px;display:none}
   .resultado.show{display:block}
-  .resultado .big{font-size:22px;font-weight:700;color:#15803d}
+  .resultado .big{font-size:22px;font-weight:700;color:#1d4ed8}
   .resultado .row{display:flex;justify-content:space-between;margin-top:6px;color:#444}
-  .mitiga{margin-top:10px;padding:9px 11px;background:#16a34a;color:#fff;border-radius:8px;font-size:13px}
+  .mitiga{margin-top:10px;padding:9px 11px;background:#2563eb;color:#fff;border-radius:8px;font-size:13px}
   .mitiga b{font-size:18px}
   .leg{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:12px;color:#555}
   .sw{width:22px;height:0;border-top:4px solid}
@@ -151,7 +152,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .msg.err{background:#fdecec;color:#b3261e;border:1px solid #f5c2c0}
   .msg.info{background:#fff7e6;color:#92600a;border:1px solid #f3dca0}
   .ayuda{font-size:11px;color:#888;line-height:1.4;margin-top:10px}
-  .ayuda a{color:#16a34a;cursor:pointer}
+  .ayuda a{color:#2563eb;cursor:pointer}
   .seccion{border-top:1px solid #eee;margin-top:14px;padding-top:12px}
   .seccion h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#777;margin:0 0 6px}
   .leyenda .barra{height:10px;border-radius:5px;margin:6px 0 2px;
@@ -159,10 +160,30 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .leyenda small{font-size:10.5px;color:#888}
   .pin{font-size:26px;line-height:1;cursor:grab;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
   .uni-dot{width:11px;height:11px;border-radius:50%;background:#7c3aed;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+  /* velocimetro de riesgo, sobre el mapa abajo-derecha */
+  #gauge{position:absolute;right:356px;bottom:18px;z-index:3;background:#fff;border-radius:14px;
+    box-shadow:0 4px 18px rgba(0,0,0,.22);padding:12px 14px 10px;width:210px;text-align:center;display:none}
+  #gauge.show{display:block}
+  #gauge .titulo{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#777;margin-bottom:2px}
+  #gauge .pct{font-size:30px;font-weight:800;color:#16a34a;line-height:1}
+  #gauge .pct small{font-size:13px;font-weight:700}
+  #gauge .sub{font-size:12px;color:#444;margin-top:4px}
+  #gauge .sub b{font-weight:700}
+  #gauge .vs{display:flex;justify-content:center;gap:8px;margin-top:6px;font-size:11px}
+  #gauge .vs span{padding:3px 7px;border-radius:6px;font-weight:700}
+  #gauge .vs .nueva{background:#dcfce7;color:#15803d}
+  #gauge .vs .peli{background:#fee2e2;color:#b91c1c}
 </style>
 </head>
 <body>
 <div id="map"></div>
+<div id="gauge">
+  <div class="titulo">Riesgo mitigado</div>
+  <svg id="g-svg" width="186" height="104" viewBox="0 0 186 104"></svg>
+  <div class="pct" id="g-pct">--<small>%</small></div>
+  <div class="sub" id="g-sub"></div>
+  <div class="vs"><span class="nueva" id="g-nueva">--</span><span class="peli" id="g-peli">--</span></div>
+</div>
 <div id="panel">
   <h1>Ruta segura</h1>
   <p class="lead">Elige modo, origen y destino. Te damos la ruta que <b>esquiva el riesgo</b>.</p>
@@ -187,12 +208,11 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   </div>
 
   <div id="resultado" class="resultado">
-    <div><span class="big" id="r-tiempo">--</span> <span style="color:#15803d">min aprox</span></div>
+    <div><span class="big" id="r-tiempo">--</span> <span style="color:#1d4ed8">min aprox</span></div>
     <div class="row"><span>Distancia</span><b id="r-dist">-- km</b></div>
     <div class="row"><span>Modo</span><b id="r-modo">--</b></div>
-    <div class="mitiga" id="mitiga"></div>
-    <div class="leg"><span class="sw" style="border-color:#16a34a"></span> Ruta segura</div>
-    <div class="leg"><span class="sw" style="border-color:#94a3b8;border-top-style:dashed"></span> Ruta corta (mas riesgo)</div>
+    <div class="leg"><span class="sw" style="border-color:#1d4ed8"></span> Ruta segura (recomendada)</div>
+    <div class="leg"><span class="sw" style="border-color:#fca5a5"></span> Ruta corta (mas riesgo)</div>
   </div>
 
   <div class="seccion">
@@ -268,14 +288,20 @@ function riesgoRuta(coords, capa){
 }
 
 // ---------- mapa -------------------------------------------------------------
+// basemap: Mapbox (bonito) si hay token; si no, CARTO gratis
+const baseTiles = window.MAPBOX_KEY
+  ? ['https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token='+window.MAPBOX_KEY]
+  : ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png','https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'];
+const baseSize = window.MAPBOX_KEY ? 512 : 256;
+const baseAttr = window.MAPBOX_KEY ? '&copy; Mapbox &copy; OpenStreetMap' : '&copy; OpenStreetMap &copy; CARTO';
 const map=new maplibregl.Map({container:'map',
-  style:{version:8,sources:{base:{type:'raster',
-    tiles:['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png','https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
-    tileSize:256,attribution:'&copy; OpenStreetMap &copy; CARTO'}},
+  style:{version:8,sources:{base:{type:'raster',tiles:baseTiles,tileSize:baseSize,attribution:baseAttr}},
     layers:[{id:'base',type:'raster',source:'base'}]},
   center:[-99.13,19.40],zoom:10.5});
 map.addControl(new maplibregl.NavigationControl(),'top-right');
 window.__map=map;
+// promesa que resuelve cuando el mapa termino de cargar (evita carrera con trazar)
+let _ready; const mapReady=new Promise(r=>{_ready=r;});
 
 function colorRamp(m){ return ['interpolate',['linear'],['get','accidentes'],
   1,'#ffffb2',Math.max(2,m*0.25),'#fed976',Math.max(3,m*0.45),'#feb24c',
@@ -291,19 +317,28 @@ map.on('load',()=>{
       paint:{'circle-radius':radioRamp(MAXES[mo.capa]),'circle-color':colorRamp(MAXES[mo.capa]),
         'circle-opacity':0.5,'circle-stroke-width':0.3,'circle-stroke-color':'#7a0010'}});
   });
-  // rutas: corta (gris discontinua) abajo, segura (verde) arriba
+  // halo morado translucido de universidades (zona) -> mas entendimiento
+  map.addSource('uni-halo',{type:'geojson',data:{type:'FeatureCollection',
+    features:UNIS.map(u=>({type:'Feature',geometry:{type:'Point',coordinates:[u.lon,u.lat]},properties:{nombre:u.nombre}}))}});
+  map.addLayer({id:'uni-halo',type:'circle',source:'uni-halo',
+    paint:{'circle-radius':['interpolate',['linear'],['zoom'],10,8,13,26,16,70],
+      'circle-color':'#7c3aed','circle-opacity':0.16,
+      'circle-stroke-color':'#7c3aed','circle-stroke-opacity':0.4,'circle-stroke-width':1}});
+  // ruta CORTA: roja translucida solida (la mas corta = mas riesgo), siempre visible
   map.addSource('r-corta',{type:'geojson',data:vacio()});
   map.addLayer({id:'r-corta',type:'line',source:'r-corta',layout:{'line-cap':'round','line-join':'round'},
-    paint:{'line-color':'#94a3b8','line-width':5,'line-opacity':0.55,'line-dasharray':[2,2]}});
+    paint:{'line-color':'#f87171','line-width':7,'line-opacity':0.5}});
+  // ruta SEGURA: solida con casing, color segun su riesgo (azul seguro -> rojo riesgoso)
   map.addSource('r-segura',{type:'geojson',data:vacio()});
   map.addLayer({id:'r-segura-casing',type:'line',source:'r-segura',layout:{'line-cap':'round','line-join':'round'},
-    paint:{'line-color':'#14532d','line-width':9,'line-opacity':0.6}});
+    paint:{'line-color':'#0b2a6b','line-width':9,'line-opacity':0.5}});
   map.addLayer({id:'r-segura',type:'line',source:'r-segura',layout:{'line-cap':'round','line-join':'round'},
-    paint:{'line-color':'#16a34a','line-width':5.5}});
-  // universidades
+    paint:{'line-color':'#2563eb','line-width':5.5}});
+  // universidades (punto morado encima del halo)
   UNIS.forEach(u=>{ const el=document.createElement('div'); el.className='uni-dot';
     new maplibregl.Marker({element:el}).setLngLat([u.lon,u.lat])
       .setPopup(new maplibregl.Popup({offset:12}).setHTML('<b>'+u.nombre+'</b>')).addTo(map); });
+  _ready();
 });
 function vacio(){ return {type:'FeatureCollection',features:[]}; }
 
@@ -362,53 +397,89 @@ async function reverse(lon,lat){ const key=getKey(); if(!key)return null;
   try{ const r=await fetch(ORS_BASE+"/geocode/reverse?api_key="+encodeURIComponent(key)+"&point.lon="+lon+"&point.lat="+lat+"&size=1");
     if(!r.ok)return null; const j=await r.json(); return (j.features&&j.features[0])?j.features[0].properties.label:null; }catch(e){return null;} }
 
-// ---------- trazar: pide alternativas, puntua riesgo, elige la mas segura ----
-async function rutas(key){
-  const body={coordinates:[[origen.lon,origen.lat],[destino.lon,destino.lat]],
-    alternative_routes:{target_count:3,weight_factor:1.7,share_factor:0.5},instructions:false};
-  let r=await fetch(ORS_BASE+"/v2/directions/"+modo.perfil+"/geojson",
+// ---------- ruteo: corta (sin evitar) vs segura (ORS evita zonas peligrosas) --
+async function rutaUna(key, avoid){
+  const body={coordinates:[[origen.lon,origen.lat],[destino.lon,destino.lat]],instructions:false};
+  if(avoid) body.options={avoid_polygons:avoid};
+  const r=await fetch(ORS_BASE+"/v2/directions/"+modo.perfil+"/geojson",
     {method:'POST',headers:{'Authorization':key,'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!r.ok){ // reintento sin alternativas (algunos perfiles no las soportan)
-    r=await fetch(ORS_BASE+"/v2/directions/"+modo.perfil+"/geojson",
-      {method:'POST',headers:{'Authorization':key,'Content-Type':'application/json'},
-       body:JSON.stringify({coordinates:body.coordinates,instructions:false})});
-    if(!r.ok){ const t=await r.text(); throw new Error(r.status+' '+t.slice(0,120)); }
-  }
-  const j=await r.json(); return j.features||[];
+  if(!r.ok){ const t=await r.text(); throw new Error(r.status+' '+t.slice(0,100)); }
+  const j=await r.json(); if(!j.features||!j.features.length) throw new Error('sin ruta');
+  return j.features[0];
+}
+// poligonos de las PEORES burbujas en el corredor O->D (para que ORS las evite)
+function zonasEvitar(capa, maxN){
+  const pad=0.012;
+  const a=Math.min(origen.lon,destino.lon)-pad, c=Math.max(origen.lon,destino.lon)+pad;
+  const b=Math.min(origen.lat,destino.lat)-pad, d=Math.max(origen.lat,destino.lat)+pad;
+  let fs=(DATOS[capa].features||[]).filter(f=>{const g=f.geometry.coordinates;
+    return g[0]>=a&&g[0]<=c&&g[1]>=b&&g[1]<=d;});
+  fs.sort((p,q)=>q.properties.accidentes-p.properties.accidentes);
+  fs=fs.slice(0,maxN);
+  const h=0.0013; // ~130 m medio lado del cuadrito
+  const polys=fs.map(f=>{const [x,y]=f.geometry.coordinates;
+    return [[[x-h,y-h],[x+h,y-h],[x+h,y+h],[x-h,y+h],[x-h,y-h]]];});
+  return polys.length? {type:'MultiPolygon',coordinates:polys} : null;
 }
 async function trazar(){
   if(!(origen&&destino))return; const key=getKey();
   if(!key){ showMsg('Necesitas tu API key de ORS.','info'); return; }
   showMsg('Calculando ruta segura...','info');
   try{
-    const fs=await rutas(key);
-    if(!fs.length) throw new Error('sin rutas');
-    // puntuar cada alternativa
-    const evaluadas=fs.map(f=>({f,
-      dist:f.properties.summary.distance, dur:f.properties.summary.duration,
-      riesgo:riesgoRuta(f.geometry.coordinates, modo.capa)}));
-    const corta = evaluadas.reduce((a,b)=> b.dur<a.dur?b:a);      // mas rapida = "corta"
-    const segura= evaluadas.reduce((a,b)=> b.riesgo<a.riesgo?b:a); // menos riesgo
-    // dibujar
-    map.getSource('r-corta').setData(corta===segura?vacio():corta.f);
-    map.getSource('r-segura').setData(segura.f);
-    // resultado
-    document.getElementById('r-dist').textContent=(segura.dist/1000).toFixed(1)+' km';
-    document.getElementById('r-tiempo').textContent=Math.max(1,Math.round(segura.dur/60));
-    document.getElementById('r-modo').textContent=modo.label;
-    const mit=document.getElementById('mitiga');
-    if(corta===segura || corta.riesgo<=segura.riesgo){
-      mit.innerHTML='La ruta mas corta ya es la mas segura para '+modo.label.toLowerCase()+'.';
-    }else{
-      const pct=Math.round(100*(corta.riesgo-segura.riesgo)/Math.max(1,corta.riesgo));
-      const dif=corta.riesgo-segura.riesgo;
-      mit.innerHTML='Riesgo mitigado <b>'+pct+'%</b><br><small>esquiva ~'+dif.toLocaleString()+
-        ' incidentes vs la ruta corta ('+segura.riesgo.toLocaleString()+' vs '+corta.riesgo.toLocaleString()+')</small>';
+    await mapReady;                                   // espera a que el mapa cargue (evita carrera)
+    const corta=await rutaUna(key,null);              // sin evitar = la mas corta
+    let segura=corta;
+    // intentar que ORS EVITE las peores zonas (top 30 -> 12 -> nada)
+    for(const n of [30,12]){
+      const avoid=zonasEvitar(modo.capa,n);
+      if(!avoid) break;
+      try{ segura=await rutaUna(key,avoid); break; }catch(e){ /* zona muy grande, reintenta con menos */ }
     }
+    const rC=riesgoRuta(corta.geometry.coordinates, modo.capa);
+    const rS=riesgoRuta(segura.geometry.coordinates, modo.capa);
+    const igual = (segura===corta) || rS>=rC;          // no logro una mas segura
+    map.getSource('r-corta').setData(igual?vacio():corta);
+    map.getSource('r-segura').setData(segura);
+    const nivel = rC>0 ? Math.min(1, rS/rC) : 0;
+    map.setPaintProperty('r-segura','line-color', colorNivel(igual?0.15:nivel));
+    const sum=segura.properties.summary;
+    document.getElementById('r-dist').textContent=(sum.distance/1000).toFixed(1)+' km';
+    document.getElementById('r-tiempo').textContent=Math.max(1,Math.round(sum.duration/60));
+    document.getElementById('r-modo').textContent=modo.label;
     document.getElementById('resultado').classList.add('show');
-    ajustar(segura.f.geometry.coordinates);
+    dibujarGauge(rS, rC, igual);
+    ajustar(segura.geometry.coordinates);
     hideMsg();
   }catch(err){ showMsg('No se pudo trazar: '+err.message,'err'); }
+}
+
+// ---------- color y velocimetro ---------------------------------------------
+function lerp(a,b,t){ return Math.round(a+(b-a)*t); }
+function col3(t,c1,c2,c3){ let a,b,u;
+  if(t<0.5){a=c1;b=c2;u=t*2;}else{a=c2;b=c3;u=(t-0.5)*2;}
+  return 'rgb('+lerp(a[0],b[0],u)+','+lerp(a[1],b[1],u)+','+lerp(a[2],b[2],u)+')'; }
+function colorNivel(t){ return col3(t,[37,99,235],[245,158,11],[220,38,38]); }   // azul->ambar->rojo
+function colorGauge(t){ return col3(t,[250,204,21],[249,115,22],[220,38,38]); }  // amarillo->naranja->rojo
+function polar(cx,cy,r,deg){ const a=deg*Math.PI/180; return [cx+r*Math.cos(a), cy-r*Math.sin(a)]; }
+function arco(cx,cy,r,d1,d2){ const p1=polar(cx,cy,r,d1),p2=polar(cx,cy,r,d2);
+  const large=Math.abs(d1-d2)>180?1:0;
+  return 'M '+p1[0].toFixed(1)+' '+p1[1].toFixed(1)+' A '+r+' '+r+' 0 '+large+' 1 '+p2[0].toFixed(1)+' '+p2[1].toFixed(1); }
+function dibujarGauge(seg,cor,igual){
+  const f = cor>0? Math.min(1,seg/cor):0;          // fraccion de riesgo que queda
+  const pct = cor>0? Math.max(0,Math.round(100*(cor-seg)/cor)):0;
+  const cx=93,cy=92,r=72, endDeg=180-f*180;
+  const [nx,ny]=polar(cx,cy,r*0.72,endDeg);
+  document.getElementById('g-svg').innerHTML=
+    '<path d="'+arco(cx,cy,r,180,0)+'" fill="none" stroke="#eee" stroke-width="13" stroke-linecap="round"/>'+
+    (f>0?'<path d="'+arco(cx,cy,r,180,endDeg)+'" fill="none" stroke="'+colorGauge(f)+'" stroke-width="13" stroke-linecap="round"/>':'')+
+    '<line x1="'+cx+'" y1="'+cy+'" x2="'+nx.toFixed(1)+'" y2="'+ny.toFixed(1)+'" stroke="#333" stroke-width="3"/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="#333"/>';
+  document.getElementById('g-pct').innerHTML=pct+'<small>%</small>';
+  document.getElementById('g-sub').innerHTML= (igual||pct<=0)?'La ruta corta ya es la mas segura'
+    :'esquiva ~'+(cor-seg).toLocaleString()+' incidentes';
+  document.getElementById('g-nueva').textContent='nueva: '+seg.toLocaleString();
+  document.getElementById('g-peli').textContent='peligrosa: '+cor.toLocaleString();
+  document.getElementById('gauge').classList.add('show');
 }
 function ajustar(coords){ let a=180,b=90,c=-180,d=-90;
   coords.forEach(p=>{ if(p[0]<a)a=p[0]; if(p[0]>c)c=p[0]; if(p[1]<b)b=p[1]; if(p[1]>d)d=p[1]; });
@@ -418,7 +489,8 @@ document.getElementById('btn-trazar').addEventListener('click',trazar);
 document.getElementById('btn-limpiar').addEventListener('click',()=>{
   setPunto('origen',null); setPunto('destino',null);
   map.getSource('r-corta').setData(vacio()); map.getSource('r-segura').setData(vacio());
-  document.getElementById('resultado').classList.remove('show'); hideMsg(); });
+  document.getElementById('resultado').classList.remove('show');
+  document.getElementById('gauge').classList.remove('show'); hideMsg(); });
 document.getElementById('link-key').addEventListener('click',()=>getKey(true));
 bindAuto('in-origen','sug-origen','origen');
 bindAuto('in-destino','sug-destino','destino');

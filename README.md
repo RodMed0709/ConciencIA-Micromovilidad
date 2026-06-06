@@ -28,13 +28,13 @@ los datos crudos y producen las cifras, las burbujas de riesgo y los GeoJSON.
 
 ![Demo app](docs/screenshots/demo-app.png)
 
-**Motor de ruta segura** — eliges modo, origen y destino; traza la más corta vs.
-la **recomendada** (esquiva accidentes y robos) y mide el % de riesgo mitigado
+**Motor de ruta segura — toda la CDMX** — la capa de riesgo (accidentes + robos)
+de toda la ciudad bajo el motor; eliges modo, origen y destino
 
-![Motor de ruta](docs/screenshots/motor-ruta.png)
+![Motor de ruta sobre toda la CDMX](docs/screenshots/motor-ruta.png)
 
-**Otro viaje** — el mismo motor en otra ruta: esquiva ~2,143 incidentes y mitiga
-el **52% del riesgo** (peatón, 7.2 km)
+**En acción** — el motor traza un viaje: la más corta (roja, más riesgo) vs. la
+**recomendada**, esquiva ~2,143 incidentes y mitiga el **52% del riesgo** (7.2 km)
 
 ![Motor de ruta — otro ejemplo](docs/screenshots/motor-ruta-2.png)
 

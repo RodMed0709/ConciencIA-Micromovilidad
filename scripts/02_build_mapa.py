@@ -10,21 +10,70 @@ Salida: data/processed/mapa_riesgo.html
 import os
 import json
 
+import pandas as pd
+import numpy as np
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GEO = os.path.join(ROOT, "data", "processed", "geojson")
+UNI_CSV = os.path.join(ROOT, "data", "raw", "9_universidad_directorio.csv")
 OUT_HTML = os.path.join(ROOT, "data", "processed", "mapa_riesgo.html")
+
+# bbox CDMX para descartar coords basura del directorio
+LON_MIN, LON_MAX = -99.40, -98.90
+LAT_MIN, LAT_MAX = 19.00, 19.60
 
 CAPAS = [
     {"id": "peaton",   "label": "Peatones",  "archivo": "burbujas_peaton.geojson"},
     {"id": "ciclista", "label": "Ciclistas", "archivo": "burbujas_ciclista.geojson"},
     {"id": "moto",     "label": "Motos",     "archivo": "burbujas_moto.geojson"},
     {"id": "coches",   "label": "Coches",    "archivo": "burbujas_coches.geojson"},
+    {"id": "crimen",   "label": "Crimen (robo)", "archivo": "burbujas_crimen.geojson"},
 ]
 
 
 def cargar(archivo):
     with open(os.path.join(GEO, archivo), encoding="utf-8") as f:
         return json.load(f)
+
+
+def cargar_unis():
+    """Lee el directorio (latin-1), filtra a CDMX con coords validas."""
+    df = pd.read_csv(UNI_CSV, encoding="latin-1", low_memory=False)
+    df["lon"] = pd.to_numeric(df["gmaps_longitud"], errors="coerce")
+    df["lat"] = pd.to_numeric(df["gmaps_latitud"], errors="coerce")
+    m = (df["lon"].between(LON_MIN, LON_MAX) & df["lat"].between(LAT_MIN, LAT_MAX))
+    df = df[m]
+    unis = []
+    for _, r in df.iterrows():
+        unis.append({
+            "nombre": str(r.get("universidad_nombre", "")).strip(),
+            "adscripcion": str(r.get("universidad_adscripcion", "")).strip(),
+            "alcaldia": str(r.get("nom_mun", "")).strip(),
+            "lon": round(float(r["lon"]), 5),
+            "lat": round(float(r["lat"]), 5),
+        })
+    return unis
+
+
+def foco_universidades(unis, celda_km=2.0):
+    """
+    Centro/zoom inicial: donde se CONCENTRAN mas universidades. Cuenta unis por
+    celda de ~celda_km y centra en el centroide del vecindario mas denso.
+    """
+    if not unis:
+        return [-99.13, 19.40], 10.5
+    lat = np.array([u["lat"] for u in unis])
+    lon = np.array([u["lon"] for u in unis])
+    dlat = celda_km / 111.0
+    dlon = celda_km / 105.0
+    gi = np.floor(lat / dlat).astype(int)
+    gj = np.floor(lon / dlon).astype(int)
+    from collections import Counter
+    cnt = Counter(zip(gi, gj))
+    (bi, bj), _ = cnt.most_common(1)[0]
+    # promedio de las unis en la celda mas densa y sus vecinas (3x3)
+    sel = np.array([(abs(i - bi) <= 1 and abs(j - bj) <= 1) for i, j in zip(gi, gj)])
+    return [float(lon[sel].mean()), float(lat[sel].mean())], 12.5
 
 
 def main():
@@ -35,9 +84,14 @@ def main():
         datos[c["id"]] = gj
         maxes[c["id"]] = gj.get("metadata", {}).get("max_accidentes_en_burbuja", 1) or 1
 
+    unis = cargar_unis()
+    centro, zoom = foco_universidades(unis)
+
     datos_js = json.dumps(datos, ensure_ascii=False)
     maxes_js = json.dumps(maxes)
     capas_js = json.dumps(CAPAS, ensure_ascii=False)
+    unis_js = json.dumps(unis, ensure_ascii=False)
+    centro_js = json.dumps(centro)
 
     html = """<!DOCTYPE html>
 <html lang="es">
@@ -66,17 +120,20 @@ def main():
 <div class="panel">
   <h1>Riesgo vial - CDMX</h1>
   <div id="capas"></div>
+  <hr style="border:none;border-top:1px solid #eee;margin:8px 0">
+  <label><input type="checkbox" id="chk_unis" checked> <span style="color:#8e44ad">&#9679;</span> Universidades (<span id="nuni"></span>)</label>
   <div class="leyenda">
     <div>Menos &rarr; mas accidentes</div>
     <div class="barra"></div>
     <div>burbuja: tamano + color por # de siniestros en esa esquina (~50 m)</div>
   </div>
-  <div class="sub">Clic en una burbuja para ver detalle. Fuente: SSC 2018-2019 (un solo registro, modo por vehiculo involucrado).</div>
+  <div class="sub">Clic en una burbuja o pin para ver detalle. Accidentes: SSC 2018-2019. Universidades: directorio SIC. Mapa centrado donde hay mas universidades.</div>
 </div>
 <script>
 const DATOS = __DATOS__;
 const MAXES = __MAXES__;
 const CAPAS = __CAPAS__;
+const UNIS = __UNIS__;
 
 const map = new maplibregl.Map({
   container: 'map',
@@ -93,8 +150,8 @@ const map = new maplibregl.Map({
     },
     layers: [{ id: 'base', type: 'raster', source: 'base' }]
   },
-  center: [-99.13, 19.40],
-  zoom: 10.5
+  center: __CENTRO__,
+  zoom: __ZOOM__
 });
 map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
@@ -134,7 +191,7 @@ map.on('load', () => {
         ? '<br><b>Cerca de:</b> '+(p.campus_cercano||'zona uni') : '';
       new maplibregl.Popup()
         .setLngLat(e.lngLat)
-        .setHTML('<b>'+(p.accidentes)+' siniestros</b><br>'+(p.colonia||'')+
+        .setHTML('<b>'+(p.accidentes)+' registros</b><br>'+(p.colonia||'')+
                  '<br><small>'+(p.alcaldia||'')+'</small>'+uni)
         .addTo(map);
     });
@@ -152,6 +209,20 @@ map.on('load', () => {
   cont.addEventListener('change', (e)=>{
     CAPAS.forEach(c=> map.setLayoutProperty(c.id,'visibility', c.id===e.target.value?'visible':'none'));
   });
+
+  // UNIVERSIDADES: pines morados estilo Google Maps con popup
+  const marcadores = UNIS.map(u=>{
+    const pop = new maplibregl.Popup({offset:24})
+      .setHTML('<b>'+u.nombre+'</b><br><small>'+(u.adscripcion||'')+
+               '</small><br><small>'+(u.alcaldia||'')+'</small>');
+    return new maplibregl.Marker({color:'#8e44ad'})
+      .setLngLat([u.lon,u.lat]).setPopup(pop).addTo(map);
+  });
+  document.getElementById('nuni').textContent = marcadores.length;
+  document.getElementById('chk_unis').addEventListener('change', (e)=>{
+    const vis = e.target.checked ? '' : 'none';
+    marcadores.forEach(m=> m.getElement().style.display = vis);
+  });
 });
 </script>
 </body>
@@ -159,7 +230,10 @@ map.on('load', () => {
 """
     html = (html.replace("__DATOS__", datos_js)
                 .replace("__MAXES__", maxes_js)
-                .replace("__CAPAS__", capas_js))
+                .replace("__CAPAS__", capas_js)
+                .replace("__UNIS__", unis_js)
+                .replace("__CENTRO__", centro_js)
+                .replace("__ZOOM__", str(zoom)))
     with open(OUT_HTML, "w", encoding="utf-8") as f:
         f.write(html)
     kb = os.path.getsize(OUT_HTML) / 1024

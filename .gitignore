@@ -7,6 +7,12 @@ venv/
 
 # CSV crudos de C5 (>100MB) -> se versionan con Git LFS (ver .gitattributes)
 
+# Derivados/crudos muy grandes (>100MB) -> NO al repo, se regeneran con los scripts
+# accidentes_maestro.csv = 236M (regenera con 04_accidentes_maestro.py)
+data/processed/accidentes_maestro.csv
+# carpetasFGJ = 534M FGJ crudo (entrada de 05_seguridad.py)
+data/raw/5_seguridad/15_carpetas_investigacion_fgj/carpetasFGJ_*.csv
+
 # API keys locales — NUNCA al repo
 ruta_key.js
 data/processed/ruta_key.js
@@ -17,6 +23,7 @@ node_modules/
 package.json
 package-lock.json
 _test_ruta.js
+_test_ruta_v2.js
 
 # OS
 Thumbs.db

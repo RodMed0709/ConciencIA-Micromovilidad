@@ -1,0 +1,16 @@
+fuente,categoria,modo
+01 C5 (incidente_c4),choque sin lesionados,coches
+01 C5 (incidente_c4),choque con lesionados,coches
+01 C5 (incidente_c4),volcadura,coches
+01 C5 (incidente_c4),accidente automovilistico,coches
+01 C5 (incidente_c4),choque con prensados,coches
+01 C5 (incidente_c4),atropellado,peaton
+01 C5 (incidente_c4),persona atropellada,peaton
+01 C5 (incidente_c4),motociclista,moto
+01 C5 (incidente_c4),ciclista,bici
+01 C5 (incidente_c4),monopatin,scooter
+04 SSC (evento+vehiculo),ATROPELLADO,peaton
+04 SSC (evento+vehiculo),vehiculo=BICICLETA,ciclista
+04 SSC (evento+vehiculo),vehiculo=MOTOCICLETA,moto
+04 SSC (evento+vehiculo),vehiculo=MONOPATIN,scooter
+04 SSC (evento+vehiculo),resto,coches

@@ -30,6 +30,11 @@ DATASETS = [
     {"cat": "1_nucleo", "dir": "04_hechos_transito_ssc", "type": "slug", "id": "hechos-de-transito-reportados-por-ssc-base-comparativa"},
     {"cat": "1_nucleo", "dir": "05_infraestructura_vial_ciclista", "type": "slug", "id": "infraestructura-vial-ciclista"},
     {"cat": "1_nucleo", "dir": "06_area_influencia_ciclovias_500m", "type": "slug", "id": "area-de-influencia-de-ciclovias-500-mts"},
+    # CAPA DE PELIGRO POR CRIMEN (robos/asaltos) -> modo peaton/bici
+    # 'solo' filtra los recursos: bajamos SOLO el acumulado (ya trae 2016-2025),
+    # no los 10 anios sueltos (redundantes).
+    {"cat": "5_seguridad", "dir": "15_carpetas_investigacion_fgj", "type": "slug",
+     "id": "carpetas-de-investigacion-fgj-de-la-ciudad-de-mexico", "solo": "acumulado"},
 ]
 
 resultados = []  # {cat, slug, status, detalle}
@@ -121,11 +126,14 @@ def procesar(item):
         print(f"  [PENDIENTE] {slug}: sin recursos")
         return
 
+    solo = item.get("solo")  # si esta, solo baja recursos cuyo url/nombre lo contenga
     bajados, fallidos = [], []
     for i, res in enumerate(recursos):
         url = res.get("url")
         fmt = (res.get("format") or "bin").lower()
         nombre = res.get("name") or f"recurso_{i}"
+        if solo and solo.lower() not in (str(url) + " " + str(nombre)).lower():
+            continue  # filtrado (ej. bajar solo el 'acumulado')
         # nombre de archivo: tomar el del url si trae extension, si no construir
         base = url.split("/")[-1].split("?")[0] if url else ""
         if not base or "." not in base:

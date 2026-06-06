@@ -7,6 +7,11 @@ venv/
 
 # CSV crudos de C5 (>100MB) -> se versionan con Git LFS (ver .gitattributes)
 
+# API keys locales — NUNCA al repo
+ruta_key.js
+data/processed/ruta_key.js
+*.key
+
 # OS
 Thumbs.db
 .DS_Store

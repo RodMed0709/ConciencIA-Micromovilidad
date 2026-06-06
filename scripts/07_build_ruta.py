@@ -191,6 +191,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   </div>
 </div>
 
+<!-- key local opcional (gitignored); si no existe, el 404 es inofensivo -->
+<script src="ruta_key.js"></script>
 <script>
 const DATOS = __DATOS__;
 const MAXES = __MAXES__;
@@ -200,8 +202,10 @@ const UNIS  = __UNIS__;
 const ORS_BASE = "https://api.openrouteservice.org";
 const FOCO = {lon:-99.1332, lat:19.4326}; // CDMX, sesgo de geocoding
 
-// ---- API key (localStorage, nunca en repo) -------------------------------
+// ---- API key (nunca en repo) ---------------------------------------------
+// Prioridad: ruta_key.js local (gitignored, define window.ORS_KEY) -> localStorage -> prompt
 function getKey(force){
+  if(!force && window.ORS_KEY) return window.ORS_KEY;
   let k = localStorage.getItem("ors_key");
   if(!k || force){
     k = (prompt("Pega tu API key gratis de OpenRouteService\\n(openrouteservice.org/dev):", k || "") || "").trim();

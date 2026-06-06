@@ -74,6 +74,16 @@ function Mapa() {
 
 ---
 
+## Asistente de chat (en ruta_segurav2.html)
+
+El botón 💬 abajo-izquierda abre un asistente: el usuario escribe en lenguaje
+natural ("llévame a Coyoacán en bici", "de Polanco a CU a pie") y traza la ruta
+segura solo. Detección de destino:
+- **Con `window.OPENAI_KEY`** (en `ruta_key.js`): usa gpt-4o-mini, entiende frases
+  libres. La llamada a OpenAI funciona servida por http(s) (Lovable); en `file://`
+  puede bloquear CORS y cae a keywords.
+- **Sin key**: modo keyword ("ir a / llévame a / de X a Y") — gratis, sin IA.
+
 ## Notas
 
 - Los HTML son **autónomos**: traen el GeoJSON de riesgo embebido. No necesitas

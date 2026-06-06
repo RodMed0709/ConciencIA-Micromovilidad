@@ -12,4 +12,8 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Self-deploy fuera de Lovable: forzar nitro con preset Vercel.
+  // Sin esto, fuera del sandbox de Lovable el build es vite-only (sin server function)
+  // y Vercel sirve estatico roto (404). Con esto genera .vercel/output (Build Output API).
+  nitro: { preset: "vercel" },
 });

@@ -14,7 +14,7 @@ scripts de Python leen los datos crudos y producen las cifras y los GeoJSON.
 La página está en **`app/`** (React + Vite). Landing + demo de celular:
 login → chat IA → mapa → **ruta segura real** (motor de riesgo).
 
-**Verla en vivo:** _(deploy en Vercel — pega la URL aquí cuando esté lista)_
+**Verla en vivo:** 👉 **https://app-puce-beta-59.vercel.app**
 
 **Correrla en local:**
 ```bash
